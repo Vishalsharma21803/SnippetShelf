@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
+  // Keep built assets portable when a preview is mounted below /pr-<number>/.
+  base: "./",
   plugins: [react(), tailwindcss()],
   test: {
     environment: "jsdom",

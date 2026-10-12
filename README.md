@@ -22,6 +22,19 @@ npm run test:e2e
 npm run preview
 ```
 
+## Pull request previews
+
+Same-repository pull requests build and publish a digest-pinned `linux/amd64`
+image through `.github/workflows/preview.yml`. The trusted workflow deploys that
+digest to the preview platform and comments a link at `/pr-<number>/`; fork pull
+requests do not receive package-write or platform credentials.
+
+Before enabling deployment, create GitHub Environment `preview-platform` and add
+`PREVIEW_PLATFORM_TOKEN` as its secret. Set the SnippetShelf GHCR package
+visibility to **Public** so the platform can pull its immutable digest. The
+trusted workflow calls the configured platform endpoint at
+`http://13.63.54.222`; no platform token is present in the PR build workflow.
+
 ## Included
 
 - 67 realistic snippets across 10 language/domain files and eight collections.

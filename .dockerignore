@@ -1,0 +1,12 @@
+.git
+.github
+node_modules
+dist
+coverage
+test-results
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.pem
+*.key
