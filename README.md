@@ -35,6 +35,15 @@ visibility to **Public** so the platform can pull its immutable digest. The
 trusted workflow calls the configured platform endpoint at
 `http://13.63.54.222`; no platform token is present in the PR build workflow.
 
+Package visibility is a one-time manual owner action, not a pipeline operation:
+open your GitHub profile's **Packages** tab, select container package
+`snippetshelf`, then **Package settings → Danger Zone → Change visibility → Public**.
+The first image push creates this package even if a later workflow step fails.
+GitHub warns that a public package cannot subsequently be made private. Publish
+only the intended public frontend image. After making it public, push the workflow
+fix/new commit to the existing PR branch to start a fresh build; rerunning an old
+commit does not pick up edited workflow code.
+
 ## Included
 
 - 67 realistic snippets across 10 language/domain files and eight collections.

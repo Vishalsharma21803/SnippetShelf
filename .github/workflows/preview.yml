@@ -80,14 +80,8 @@ jobs:
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.event.pull_request.head.sha }}
 
-      # GHCR packages created by GITHUB_TOKEN can default to private. This
-      # makes anonymous pulls possible for the platform's digest-only runtime.
-      - name: Set GHCR package visibility to public
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGE_NAME: ${{ github.event.repository.name }}
-        run: gh api --method PATCH "user/packages/container/${PACKAGE_NAME}/visibility" --field visibility=public
-
+      # One-time prerequisite: owner sets GHCR package visibility to Public
+      # in GitHub package settings. Do not mutate visibility from this PR job.
       - name: Write deployment metadata
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
