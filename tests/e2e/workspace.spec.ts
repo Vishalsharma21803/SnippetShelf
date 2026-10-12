@@ -123,6 +123,22 @@ test('command palette, theme persistence and form errors', async ({ page }) => {
   await expect(page.locator('.light-theme')).toHaveCount(1);
 });
 
+test('avatar circle and initials colors can be changed and persist after reload', async ({ page }) => {
+  await openLibrary(page);
+  const avatar = page.locator('.avatar');
+  await expect(avatar).toHaveCSS('background-color', 'rgb(221, 197, 255)');
+  await expect(avatar).toHaveCSS('color', 'rgb(52, 44, 76)');
+  const settings = await openSettings(page);
+  await settings.getByLabel('Avatar background color').fill('#2266aa');
+  await expect(avatar).toHaveCSS('background-color', 'rgb(34, 102, 170)');
+  await settings.getByLabel('Avatar text color').fill('#ffffff');
+  await expect(avatar).toHaveCSS('color', 'rgb(255, 255, 255)');
+  await page.reload();
+  await expect(avatar).toHaveCSS('background-color', 'rgb(34, 102, 170)');
+  await expect(avatar).toHaveCSS('color', 'rgb(255, 255, 255)');
+  await expect(avatar).toHaveText('VS');
+});
+
 test('mobile browse, edit and page overflow', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openLibrary(page);

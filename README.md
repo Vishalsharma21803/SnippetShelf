@@ -35,6 +35,15 @@ visibility to **Public** so the platform can pull its immutable digest. The
 trusted workflow calls the configured platform endpoint at
 `http://13.63.54.222`; no platform token is present in the PR build workflow.
 
+Package visibility is a one-time manual owner action, not a pipeline operation:
+open your GitHub profile's **Packages** tab, select container package
+`snippetshelf`, then **Package settings → Danger Zone → Change visibility → Public**.
+The first image push creates this package even if a later workflow step fails.
+GitHub warns that a public package cannot subsequently be made private. Publish
+only the intended public frontend image. After making it public, push the workflow
+fix/new commit to the existing PR branch to start a fresh build; rerunning an old
+commit does not pick up edited workflow code.
+
 ## Included
 
 - 67 realistic snippets across 10 language/domain files and eight collections.
@@ -42,7 +51,7 @@ trusted workflow calls the configured platform endpoint at
 - Resizable three-panel desktop workspace (pointer and keyboard), distraction-free reading mode, mobile library/detail navigation, dark/light/system theme.
 - Create, edit, delete with confirmation, favorite, copy, usage tracking, related snippets.
 - Create and edit collection names, descriptions, and colors. Names are trimmed, nonempty, and unique case-insensitively; colors use six-digit hex values. System collections are protected. Delete only empty collections, retaining at least one editable collection.
-- Settings for code size, line wrapping, line numbers, motion, theme, reset, and clear.
+- Settings for code size, line wrapping, line numbers, motion, theme, avatar circle/text colors, reset, and clear.
 - Command palette (`Ctrl/Cmd+K`), `/` search, `N` create, `E` edit, `F` favorite, `C` copy. Arrow keys navigate palette and focused list cards. Escape closes overlays; dirty editor asks before discarding.
 - Highlighted code editing/viewing and safe Markdown notes with preview.
 - Full-library or current-results JSON export; validated import preview with atomic replacement or merge by file picker or drag/drop. Merge preserves existing IDs and preferences while adding new records.

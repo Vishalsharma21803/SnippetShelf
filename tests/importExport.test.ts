@@ -1,15 +1,66 @@
 import { describe, expect, it } from "vitest";
 import { collections, seedSnippets } from "../src/data/seedLibrary";
-import { makeSnapshot, mergeSnapshots, parseSnapshot } from "../src/lib/importExport";
+import { makeSnapshot, mergeSnapshots, parseSnapshot, validateSnapshot } from "../src/lib/importExport";
 import { settingsDefaults } from "../src/lib/repository";
 describe("Import validation", () => {
   it("round-trips the complete seeded snapshot", () => {
     const data = makeSnapshot(seedSnippets, collections, settingsDefaults);
     expect(parseSnapshot(JSON.stringify(data))).toEqual(data);
+    expect(data.settings).toMatchObject({ avatarBackgroundColor: "#ddc5ff", avatarTextColor: "#342c4c" });
     expect(new Set(seedSnippets.map((s) => s.id)).size).toBe(
       seedSnippets.length,
     );
   });
+  it("round-trips custom six-digit avatar colors without changing the schema version", () => {
+    const data = makeSnapshot(seedSnippets, collections, {
+      ...settingsDefaults,
+      avatarBackgroundColor: "#ABC123",
+      avatarTextColor: "#012def",
+    });
+    expect(data.schemaVersion).toBe(1);
+    expect(parseSnapshot(JSON.stringify(data))).toEqual(data);
+  });
+  it("defaults missing avatar fields in legacy backups without changing other data or the input", () => {
+    const data = makeSnapshot(seedSnippets, collections, settingsDefaults);
+    const legacySettings = {
+      theme: "light",
+      editorFontSize: "large",
+      lineWrap: true,
+      reduceMotion: true,
+      showLineNumbers: false,
+    };
+    const legacy = { ...data, settings: legacySettings };
+    const before = JSON.stringify(legacy);
+    const expected = { ...data, settings: { ...settingsDefaults, ...legacySettings } };
+    expect(validateSnapshot(legacy)).toEqual(expected);
+    expect(parseSnapshot(before)).toEqual(expected);
+    expect(JSON.stringify(legacy)).toBe(before);
+  });
+  it.each(["avatarBackgroundColor", "avatarTextColor"] as const)(
+    "defaults only the missing %s field",
+    (field) => {
+      const settings: Record<string, unknown> = {
+        ...settingsDefaults,
+        avatarBackgroundColor: "#123456",
+        avatarTextColor: "#abcdef",
+      };
+      delete settings[field];
+      const data = { ...makeSnapshot(seedSnippets, collections, settingsDefaults), settings };
+      expect(parseSnapshot(JSON.stringify(data)).settings).toEqual({
+        ...settings,
+        [field]: settingsDefaults[field],
+      });
+    },
+  );
+  it.each(["avatarBackgroundColor", "avatarTextColor"] as const)(
+    "rejects invalid %s values rather than replacing them with defaults",
+    (field) => {
+      const data = makeSnapshot(seedSnippets, collections, settingsDefaults);
+      for (const color of ["#abc", "#12345678", "123456", "#gggggg", "red", "", " #123456", "#123456\n", null, 123456, false, undefined]) {
+        expect(() => validateSnapshot({ ...data, settings: { ...data.settings, [field]: color } })).toThrow("Invalid settings");
+      }
+    },
+  );
   it("rejects missing code and invalid references", () => {
     const data = makeSnapshot(seedSnippets, collections, settingsDefaults);
     expect(() =>

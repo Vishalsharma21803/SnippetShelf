@@ -56,6 +56,8 @@ export type Settings = {
   lineWrap: boolean;
   reduceMotion: boolean;
   showLineNumbers: boolean;
+  avatarBackgroundColor: string;
+  avatarTextColor: string;
 };
 export type LibraryFilters = {
   query: string;

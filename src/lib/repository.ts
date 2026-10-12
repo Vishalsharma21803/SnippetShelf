@@ -2,14 +2,9 @@ import type { Collection, CollectionInput, Settings, Snippet, SnippetInput } fro
 import { collections, seedSnippets } from "../data/seedLibrary";
 import { makeSnapshot, validateSnapshot } from "./importExport";
 import { normalizeCollectionInput } from "./validation";
+import { settingsDefaults } from "./settings";
 
-export const settingsDefaults: Settings = {
-  theme: "dark",
-  editorFontSize: "medium",
-  lineWrap: false,
-  reduceMotion: false,
-  showLineNumbers: true,
-};
+export { settingsDefaults } from "./settings";
 type State = {
   snippets: Snippet[];
   collections: Collection[];
