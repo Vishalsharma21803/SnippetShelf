@@ -56,6 +56,8 @@ describe("IndexedDB persistence", () => {
       showLineNumbers: false,
       reduceMotion: true,
       editorFontSize: "large",
+      avatarBackgroundColor: "#123abc",
+      avatarTextColor: "#ABCDEF",
     });
     vi.resetModules();
     const { repository: reopened } = await import("../src/lib/repository");
@@ -65,12 +67,80 @@ describe("IndexedDB persistence", () => {
     expect(await reopened.getSettings()).toMatchObject({
       theme: "light",
       lineWrap: true,
+      avatarBackgroundColor: "#123abc",
+      avatarTextColor: "#ABCDEF",
     });
     await reopened.replaceLibrary([], collections);
     vi.resetModules();
     const { repository: empty } = await import("../src/lib/repository");
     expect((await empty.initializeLibrary()).snippets).toEqual([]);
     expect(empty.storageFallback).toBe(false);
+  });
+
+  it("persists default avatar colors on first launch", async () => {
+    const { repository, settingsDefaults } = await import("../src/lib/repository");
+    expect(await repository.getSettings()).toEqual(settingsDefaults);
+    expect(await storedLibrary()).toMatchObject({ settings: {
+      avatarBackgroundColor: "#ddc5ff",
+      avatarTextColor: "#342c4c",
+    } });
+  });
+
+  it("loads legacy saved settings with avatar defaults and preserves the entire library", async () => {
+    const legacy = {
+      snippets: [{ ...seedSnippets[0], title: "Keep saved edits", copyCount: 9 }],
+      collections: collections.map(collection => ({ ...collection, description: "Keep saved collection" })),
+      settings: { theme: "light", editorFontSize: "large", lineWrap: true, reduceMotion: true, showLineNumbers: false },
+    };
+    await storedLibrary(legacy);
+    const { repository } = await import("../src/lib/repository");
+    expect(await repository.initializeLibrary()).toEqual({ snippets: legacy.snippets, collections: legacy.collections });
+    const expectedSettings = { ...legacy.settings, avatarBackgroundColor: "#ddc5ff", avatarTextColor: "#342c4c" };
+    expect(await repository.getSettings()).toEqual(expectedSettings);
+    expect(await storedLibrary()).toEqual(legacy);
+    await repository.saveSettings(await repository.getSettings());
+    expect(await storedLibrary()).toEqual({ ...legacy, settings: expectedSettings });
+    vi.resetModules();
+    const { repository: reopened } = await import("../src/lib/repository");
+    expect(await reopened.getSettings()).toEqual(expectedSettings);
+    expect(await reopened.initializeLibrary()).toEqual({ snippets: legacy.snippets, collections: legacy.collections });
+  });
+
+  it.each(["avatarBackgroundColor", "avatarTextColor"] as const)(
+    "rejects invalid %s saves without changing memory or persistence",
+    async (field) => {
+      const { repository } = await import("../src/lib/repository");
+      const before = await repository.getSettings();
+      const saved = await storedLibrary();
+      await expect(repository.saveSettings({ ...before, [field]: "#abc" })).rejects.toThrow("Invalid settings");
+      expect(await repository.getSettings()).toEqual(before);
+      expect(await storedLibrary()).toEqual(saved);
+    },
+  );
+
+  it("rejects invalid stored avatar colors without overwriting the saved library", async () => {
+    const { settingsDefaults } = await import("../src/lib/repository");
+    const invalid = { snippets: seedSnippets, collections, settings: { ...settingsDefaults, avatarTextColor: null } };
+    await storedLibrary(invalid);
+    vi.resetModules();
+    const { repository } = await import("../src/lib/repository");
+    await expect(repository.initializeLibrary()).rejects.toThrow("Invalid settings");
+    expect(await storedLibrary()).toEqual(invalid);
+    expect(repository.storageFallback).toBe(false);
+  });
+
+  it("keeps avatar settings atomic when persistence fails and permits retry", async () => {
+    const { repository } = await import("../src/lib/repository");
+    const before = await repository.getSettings();
+    const saved = await storedLibrary();
+    const next = { ...before, avatarBackgroundColor: "#123456", avatarTextColor: "#abcdef" };
+    abortNextWrite();
+    await expect(repository.saveSettings(next)).rejects.toThrow();
+    expect(await repository.getSettings()).toEqual(before);
+    expect(await storedLibrary()).toEqual(saved);
+    await repository.saveSettings(next);
+    expect(await repository.getSettings()).toEqual(next);
+    expect(await storedLibrary()).toMatchObject({ settings: next });
   });
 
   it("persists collection CRUD and merged snapshots across reloads", async () => {

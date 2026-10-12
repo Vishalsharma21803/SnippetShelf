@@ -510,6 +510,16 @@ select:focus-visible,
   font-size: 11px;
   font-weight: 800;
 }
+.avatar-color-input {
+  width: 46px;
+  height: 34px;
+  flex: none;
+  padding: 2px;
+  border: 1px solid #60738d;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
 .mobile-menu {
   display: none;
   background: none;

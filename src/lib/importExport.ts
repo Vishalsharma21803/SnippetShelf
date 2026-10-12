@@ -5,6 +5,7 @@ import {
   type Snippet,
 } from "../types";
 import { collectionNameKey, validCollectionColor, validateSnippet } from "./validation";
+import { settingsDefaults } from "./settings";
 export type Snapshot = {
   schemaVersion: 1;
   exportedAt: string;
@@ -103,17 +104,26 @@ export function validateSnapshot(value: unknown): Snapshot {
       throw new Error(`Invalid fields in snippet: ${item.title}`);
     snippetIds.add(item.id);
   }
-  const settings = value.settings;
+  if (!record(value.settings)) throw new Error("Invalid settings.");
+  // Schema version 1 predates avatar preferences. Only the new fields are optional
+  // in older records; all original settings must still pass validation.
+  const settings: Record<string, unknown> = {
+    avatarBackgroundColor: settingsDefaults.avatarBackgroundColor,
+    avatarTextColor: settingsDefaults.avatarTextColor,
+    ...value.settings,
+  };
   if (
-    !record(settings) ||
     !["dark", "light", "system"].includes(settings.theme as string) ||
     !["small", "medium", "large"].includes(settings.editorFontSize as string) ||
     !["lineWrap", "reduceMotion", "showLineNumbers"].every(
       (key) => typeof settings[key] === "boolean",
+    ) ||
+    ![settings.avatarBackgroundColor, settings.avatarTextColor].every(
+      (color) => string(color) && color.length === 7 && validCollectionColor(color),
     )
   )
     throw new Error("Invalid settings.");
-  return value as unknown as Snapshot;
+  return { ...value, settings } as unknown as Snapshot;
 }
 
 /** Add new IDs only; existing records and preferences remain authoritative. */
