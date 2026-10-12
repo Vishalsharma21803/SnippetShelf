@@ -42,7 +42,7 @@ trusted workflow calls the configured platform endpoint at
 - Resizable three-panel desktop workspace (pointer and keyboard), distraction-free reading mode, mobile library/detail navigation, dark/light/system theme.
 - Create, edit, delete with confirmation, favorite, copy, usage tracking, related snippets.
 - Create and edit collection names, descriptions, and colors. Names are trimmed, nonempty, and unique case-insensitively; colors use six-digit hex values. System collections are protected. Delete only empty collections, retaining at least one editable collection.
-- Settings for code size, line wrapping, line numbers, motion, theme, reset, and clear.
+- Settings for code size, line wrapping, line numbers, motion, theme, avatar circle/text colors, reset, and clear.
 - Command palette (`Ctrl/Cmd+K`), `/` search, `N` create, `E` edit, `F` favorite, `C` copy. Arrow keys navigate palette and focused list cards. Escape closes overlays; dirty editor asks before discarding.
 - Highlighted code editing/viewing and safe Markdown notes with preview.
 - Full-library or current-results JSON export; validated import preview with atomic replacement or merge by file picker or drag/drop. Merge preserves existing IDs and preferences while adding new records.
