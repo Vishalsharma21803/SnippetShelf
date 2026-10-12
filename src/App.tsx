@@ -82,8 +82,12 @@ export default function App() {
   const newSnippet = () => { setMobileNav(false); setDialog({ type: "editor", id: null }); };
   const favorite = (id: string) => void runAction(() => app.toggleFavorite(id), "Could not update favorite.");
   const theme = app.settings.theme === "system" ? systemDark ? "dark" : "light" : app.settings.theme;
+  const avatarColors = {
+    avatarBackgroundColor: "avatarBackgroundColor" in app.settings ? String(app.settings.avatarBackgroundColor) : "#ddc5ff",
+    avatarTextColor: "avatarTextColor" in app.settings ? String(app.settings.avatarTextColor) : "#342c4c",
+  };
   return <div className={cn("min-h-screen bg-ink text-slate-100", theme === "light" && "light-theme", app.settings.reduceMotion && "reduce-motion")}>
-    <AppHeader query={filters.query} onQuery={query => { setFilters(value => ({ ...value, query })); setReading(false); setMobilePanel("list"); }} onMenu={() => { setReading(false); setMobileNav(true); }} onCommands={() => setDialog({ type: "commands" })} theme={theme} onTheme={() => void runAction(() => app.saveSettings({ ...app.settings, theme: theme === "dark" ? "light" : "dark" }), "Could not save theme.")} />
+    <AppHeader query={filters.query} onQuery={query => { setFilters(value => ({ ...value, query })); setReading(false); setMobilePanel("list"); }} onMenu={() => { setReading(false); setMobileNav(true); }} onCommands={() => setDialog({ type: "commands" })} theme={theme} onTheme={() => void runAction(() => app.saveSettings({ ...app.settings, theme: theme === "dark" ? "light" : "dark" }), "Could not save theme.")} {...avatarColors} />
     <div className="pr-banner"><h2><span className="pr-banner-mark" aria-hidden="true" />PR number four</h2></div>
     <ResizableWorkspace reading={reading}
       navigation={<LibraryNavigation filters={filters} setFilters={setFilters} collections={app.collections} snippets={app.snippets} open={mobileNav} onClose={() => { setMobileNav(false); setMobilePanel("list"); }} onNew={newSnippet} onSettings={() => { setMobileNav(false); setDialog({ type: "settings" }); }} onCommands={() => { setMobileNav(false); setDialog({ type: "commands" }); }} onCollections={() => { setMobileNav(false); setDialog({ type: "collections" }); }} />}
