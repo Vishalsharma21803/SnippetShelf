@@ -30,7 +30,10 @@ it("keeps the platform token out of the PR build and uses the current API contra
   expect(build).toContain("npm test");
   expect(build).toContain("docker/build-push-action@v6");
   expect(build).toContain("steps.build.outputs.digest");
-  expect(build).toContain("visibility=public");
+   expect(build).not.toContain("/visibility");
+   expect(build).not.toContain("--method PATCH");
+   expect(build).toContain("actions/upload-artifact@v4");
+   expect(build.indexOf("steps.build.outputs.digest")).toBeLessThan(build.indexOf("actions/upload-artifact@v4"));
   expect(trusted).toContain("http://13.63.54.222");
   expect(trusted).toContain("POST");
   expect(trusted).toContain("/api/deployments");
