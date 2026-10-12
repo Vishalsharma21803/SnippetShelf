@@ -40,6 +40,22 @@ test('seed library, search, filters, keyboard resizing and reading mode', async 
   expect(errors).toEqual([]);
 });
 
+test('PR number two banner stays visible across workspace views on desktop and mobile', async ({ page }) => {
+  await openLibrary(page);
+  const heading = page.getByRole('heading', { name: 'PR number two' });
+  await expect(heading).toBeVisible();
+  await page.getByRole('button', { name: 'Enter reading mode' }).click();
+  await expect(heading).toBeVisible();
+  await page.getByRole('button', { name: 'Exit reading mode' }).click();
+  const settings = await openSettings(page);
+  await expect(heading).toBeVisible();
+  await settings.getByRole('button', { name: 'Close settings' }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('.snippet-card').first().click();
+  await expect(heading).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
 test('create, reload, edit, copy, favorite and delete', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await openLibrary(page);
